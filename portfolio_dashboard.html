@@ -1,0 +1,2436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Portfolio Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .dashboard {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 20px 20px 0 0;
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .nav-tab:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .page-content {
+            display: none;
+        }
+
+        .page-content.active {
+            display: block;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .portfolio-summary {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .summary-card {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px 25px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            margin: 5px;
+            min-width: 200px;
+        }
+
+        .summary-card h3 {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .summary-card .value {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .last-updated {
+            position: absolute;
+            top: 15px;
+            right: 30px;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .analysis-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .analysis-btn {
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 10px rgba(78, 205, 196, 0.3);
+        }
+
+        .analysis-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
+        }
+
+        .analysis-btn.active {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+        }
+
+        .category-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+            padding: 25px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .overview-card {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border: 1px solid #dee2e6;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .overview-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .overview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .overview-title {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .overview-risk {
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.7em;
+            font-weight: bold;
+        }
+
+        .overview-metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .overview-metric {
+            text-align: center;
+        }
+
+        .overview-metric-label {
+            font-size: 0.8em;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+
+        .overview-metric-value {
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .overview-pnl {
+            grid-column: 1 / -1;
+            text-align: center;
+            margin-top: 10px;
+            padding-top: 15px;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .pnl-large {
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .category-section {
+            margin-bottom: 40px;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .category-header {
+            padding: 20px 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .category-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .category-summary {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 0.9em;
+        }
+
+        .category-pnl {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .ai-ml { background: linear-gradient(135deg, #ff6b6b, #ee5a52); }
+        .quantum { background: linear-gradient(135deg, #4ecdc4, #44a08d); }
+        .semiconductor { background: linear-gradient(135deg, #45b7d1, #96c93d); }
+        .cloud-enterprise { background: linear-gradient(135deg, #f093fb, #f5576c); }
+        .crypto-mining { background: linear-gradient(135deg, #ffc837, #ff8008); }
+        .energy { background: linear-gradient(135deg, #8360c3, #2ebf91); }
+        .big-tech { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .other-tech { background: linear-gradient(135deg, #ffecd2, #fcb69f); color: #333 !important; }
+        .etf { background: linear-gradient(135deg, #a8edea, #fed6e3); color: #333 !important; }
+        .transport { background: linear-gradient(135deg, #ff9a9e, #fecfef); color: #333 !important; }
+        .other { background: linear-gradient(135deg, #c3cfe2, #c3cfe2); color: #333 !important; }
+
+        .risk-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .risk-high { background: #ff4757; color: white; }
+        .risk-medium { background: #ffa502; color: white; }
+        .risk-low { background: #2ed573; color: white; }
+
+        .stocks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 15px;
+            padding: 20px 30px 30px;
+        }
+
+        .stock-card {
+            background: white;
+            border: 1px solid #e1e8ed;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .stock-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        .stock-card.expanded {
+            grid-column: 1 / -1;
+            max-width: none;
+        }
+
+        .stock-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .stock-symbol {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .stock-name {
+            font-size: 0.85em;
+            color: #7f8c8d;
+            margin-top: 2px;
+        }
+
+        .performance-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .profit { background: #2ecc71; }
+        .loss { background: #e74c3c; }
+        .neutral { background: #95a5a6; }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .stock-metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .metric {
+            text-align: center;
+        }
+
+        .metric-label {
+            font-size: 0.75em;
+            color: #7f8c8d;
+            margin-bottom: 2px;
+        }
+
+        .metric-value {
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .pnl-bar {
+            height: 6px;
+            background: #ecf0f1;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .pnl-fill {
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+
+        .analysis-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #f8f9fa;
+            display: none;
+        }
+
+        .analysis-section.active {
+            display: block;
+        }
+
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .analysis-card {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .analysis-title {
+            font-size: 0.85em;
+            color: #6c757d;
+            margin-bottom: 8px;
+        }
+
+        .analysis-value {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .analysis-subtitle {
+            font-size: 0.75em;
+            color: #95a5a6;
+            margin-top: 5px;
+        }
+
+        .technical-indicators {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .technical-card {
+            background: white;
+            border: 1px solid #e1e8ed;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .technical-label {
+            font-size: 0.7em;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+        }
+
+        .technical-value {
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .recommendation-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin: 5px;
+        }
+
+        .rec-strong-buy { background: #2ecc71; color: white; }
+        .rec-buy { background: #27ae60; color: white; }
+        .rec-hold { background: #f39c12; color: white; }
+        .rec-sell { background: #e67e22; color: white; }
+        .rec-strong-sell { background: #e74c3c; color: white; }
+
+        .news-section {
+            margin-top: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .news-item {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+
+        .news-headline {
+            font-size: 0.85em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .news-source {
+            font-size: 0.7em;
+            color: #6c757d;
+        }
+
+        .sentiment-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-left: 5px;
+        }
+
+        .sentiment-positive { background: #2ecc71; }
+        .sentiment-negative { background: #e74c3c; }
+        .sentiment-neutral { background: #95a5a6; }
+
+        .controls {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .refresh-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .auto-refresh {
+            margin-left: 20px;
+            color: #7f8c8d;
+        }
+
+        .expand-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 1.2em;
+            cursor: pointer;
+            color: #7f8c8d;
+            padding: 5px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .expand-btn:hover {
+            background: #f8f9fa;
+            color: #2c3e50;
+        }
+
+        .loading {
+            color: #95a5a6;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .stocks-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .portfolio-summary {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .summary-card {
+                margin-bottom: 10px;
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .analysis-controls {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <div class="nav-tab active" onclick="switchPage('portfolio')">
+                📊 My Portfolio (29 stocks)
+            </div>
+            <div class="nav-tab" onclick="switchPage('watchlist')">
+                👀 Watchlist (39 candidates)
+            </div>
+            <div class="nav-tab" onclick="switchPage('analysis')">
+                📈 Technical Analysis
+            </div>
+        </div>
+
+        <!-- Portfolio Page -->
+        <div id="portfolioPage" class="page-content active">
+            <div class="header">
+                <div class="last-updated" id="lastUpdated">Last Updated: Loading...</div>
+                <h1>🚀 Live Portfolio Dashboard</h1>
+                <div class="portfolio-summary">
+                    <div class="summary-card">
+                        <h3>Total Value</h3>
+                        <div class="value" id="totalValue">$0.00</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Total P&L</h3>
+                        <div class="value" id="totalPnL">$0.00</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>P&L %</h3>
+                        <div class="value" id="totalPnLPercent">0.00%</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Positions</h3>
+                        <div class="value" id="totalPositions">29</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Winners</h3>
+                        <div class="value" id="winners">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="controls">
+                    <button class="refresh-btn" onclick="refreshPortfolioData()">🔄 Refresh Portfolio</button>
+                    <span class="auto-refresh">Auto-refresh: <span id="countdown">30</span>s | <span id="dataSource" style="color: #2ecc71;">LIVE DATA ✅</span></span>
+                </div>
+
+                <!-- Analysis Controls -->
+                <div class="analysis-controls">
+                    <button class="analysis-btn active" onclick="toggleAnalysisView('basic')">📊 Basic View</button>
+                    <button class="analysis-btn" onclick="toggleAnalysisView('fundamental')">📋 Fundamental</button>
+                    <button class="analysis-btn" onclick="toggleAnalysisView('technical')">📈 Technical</button>
+                    <button class="analysis-btn" onclick="fetchAllAnalysis()">🔍 Deep Analysis</button>
+                </div>
+
+                <!-- Category Overview Section -->
+                <div style="margin: 30px 0;">
+                    <h2 style="text-align: center; color: #2c3e50; margin-bottom: 20px;">📊 Category Performance Overview</h2>
+                    <div class="category-overview" id="categoryOverview">
+                        <!-- Category overview cards will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Portfolio Categories -->
+                <div class="category-section">
+                    <div class="category-header ai-ml">
+                        <span>🤖 AI/ML & Analytics</span>
+                        <span class="risk-badge risk-high">HIGH RISK</span>
+                    </div>
+                    <div class="stocks-grid" id="ai-ml-stocks"></div>
+                </div>
+
+                <div class="category-section">
+                    <div class="category-header quantum">
+                        <span>⚛️ Quantum Computing</span>
+                        <span class="risk-badge risk-high">HIGH RISK</span>
+                    </div>
+                    <div class="stocks-grid" id="quantum-stocks"></div>
+                </div>
+
+                <div class="category-section">
+                    <div class="category-header semiconductor">
+                        <span>💾 Semiconductor & Hardware</span>
+                        <span class="risk-badge risk-medium">MEDIUM RISK</span>
+                    </div>
+                    <div class="stocks-grid" id="semiconductor-stocks"></div>
+                </div>
+
+                <div class="category-section">
+                    <div class="category-header cloud-enterprise">
+                        <span>☁️ Cloud & Enterprise Software</span>
+                        <span class="risk-badge risk-medium">MEDIUM RISK</span>
+                    </div>
+                    <div class="stocks-grid" id="cloud-enterprise-stocks"></div>
+                </div>
+
+                <div class="category-section">
+                    <div class="category-header crypto-mining">
+                        <span>₿ Crypto & Mining</span>
+                        <span class="risk-badge risk-high">HIGH RISK</span>
+                    </div>
+                    <div class="stocks-grid" id="crypto-mining-stocks"></div>
+                </div>
+
+                <div class="category-section">
+                    <div class="category-header energy">
+                        <span>⚡ Energy & Nuclear</span>
+                        <span class="risk-badge risk-medium">MEDIUM RISK</span>
+                    </div>
+                    <div class="stocks-grid" id="energy-stocks"></div>
+                </div>
+
+                <div class="category-section">
+                    <div class="category-header big-tech">
+                        <span>🏢 Big Tech</span>
+                        <span class="risk-badge risk-low">LOW RISK</span>
+                    </div>
+                    <div class="stocks-grid" id="big-tech-stocks"></div>
+                </div>
+
+                <div class="category-section">
+                    <div class="category-header other-tech">
+                        <span>🔧 Other Technology</span>
+                        <span class="risk-badge risk-medium">MEDIUM RISK</span>
+                    </div>
+                    <div class="stocks-grid" id="other-tech-stocks"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Watchlist Page -->
+        <div id="watchlistPage" class="page-content">
+            <div class="header">
+                <div class="last-updated" id="watchlistLastUpdated">Last Updated: Loading...</div>
+                <h1>👀 Watchlist Dashboard</h1>
+                <div class="portfolio-summary">
+                    <div class="summary-card">
+                        <h3>Avg Performance</h3>
+                        <div class="value" id="watchlistAvgPerf">0.00%</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Best Performer</h3>
+                        <div class="value" id="watchlistBest">--</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Worst Performer</h3>
+                        <div class="value" id="watchlistWorst">--</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Total Stocks</h3>
+                        <div class="value" id="watchlistTotal">39</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Gainers</h3>
+                        <div class="value" id="watchlistGainers">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="controls">
+                    <button class="refresh-btn" onclick="refreshWatchlistData()">🔄 Refresh Watchlist</button>
+                    <span class="auto-refresh">Tracking since Aug 4, 2025 (10 days ago) | <span id="watchlistDataSource" style="color: #2ecc71;">LIVE DATA ✅</span></span>
+                </div>
+
+                <!-- Watchlist Category Overview -->
+                <div style="margin: 30px 0;">
+                    <h2 style="text-align: center; color: #2c3e50; margin-bottom: 20px;">👀 Watchlist Performance (Since Aug 4, 2025)</h2>
+                    <div class="category-overview" id="watchlistCategoryOverview">
+                        <!-- Watchlist category overview cards will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Watchlist Categories (same structure as portfolio) -->
+                <div class="category-section">
+                    <div class="category-header ai-ml">
+                        <span>🤖 AI/ML & Analytics</span>
+                        <span class="risk-badge risk-high">HIGH RISK</span>
+                    </div>
+                    <div class="stocks-grid" id="watchlist-ai-ml-stocks"></div>
+                </div>
+
+                <div class="category-section">
+                    <div class="category-header big-tech">
+                        <span>🏢 Big Tech</span>
+                        <span class="risk-badge risk-low">LOW RISK</span>
+                    </div>
+                    <div class="stocks-grid" id="watchlist-big-tech-stocks"></div>
+                </div>
+
+                <div class="category-section">
+                    <div class="category-header semiconductor">
+                        <span>💾 Semiconductor & Hardware</span>
+                        <span class="risk-badge risk-medium">MEDIUM RISK</span>
+                    </div>
+                    <div class="stocks-grid" id="watchlist-semiconductor-stocks"></div>
+                </div>
+
+                <div class="category-section">
+                    <div class="category-header cloud-enterprise">
+                        <span>☁️ Cloud & Enterprise Software</span>
+                        <span class="risk-badge risk-medium">MEDIUM RISK</span>
+                    </div>
+                    <div class="stocks-grid" id="watchlist-cloud-enterprise-stocks"></div>
+                </div>
+
+                <div class="category-section">
+                    <div class="category-header energy">
+                        <span>⚡ Energy & Nuclear</span>
+                        <span class="risk-badge risk-medium">MEDIUM RISK</span>
+                    </div>
+                    <div class="stocks-grid" id="watchlist-energy-stocks"></div>
+                </div>
+
+                <div class="category-section">
+                    <div class="category-header etf">
+                        <span>📈 AI/Tech ETFs</span>
+                        <span class="risk-badge risk-medium">MEDIUM RISK</span>
+                    </div>
+                    <div class="stocks-grid" id="watchlist-etf-stocks"></div>
+                </div>
+
+                <div class="category-section">
+                    <div class="category-header transport">
+                        <span>✈️ Transportation & Aviation</span>
+                        <span class="risk-badge risk-high">HIGH RISK</span>
+                    </div>
+                    <div class="stocks-grid" id="watchlist-transport-stocks"></div>
+                </div>
+
+                <div class="category-section">
+                    <div class="category-header other">
+                        <span>🏭 Other Sectors</span>
+                        <span class="risk-badge risk-medium">MEDIUM RISK</span>
+                    </div>
+                    <div class="stocks-grid" id="watchlist-other-stocks"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Technical Analysis Page -->
+        <div id="analysisPage" class="page-content">
+            <div class="header">
+                <div class="last-updated" id="analysisLastUpdated">Last Updated: Loading...</div>
+                <h1>📈 Technical Analysis Center</h1>
+                <div class="portfolio-summary">
+                    <div class="summary-card">
+                        <h3>Market Sentiment</h3>
+                        <div class="value" id="marketSentiment">Neutral</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Overbought</h3>
+                        <div class="value" id="overboughtCount">0</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Oversold</h3>
+                        <div class="value" id="oversoldCount">0</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Strong Buys</h3>
+                        <div class="value" id="strongBuyCount">0</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Analyst Coverage</h3>
+                        <div class="value" id="analystCoverage">--</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="controls">
+                    <button class="refresh-btn" onclick="refreshAnalysisData()">🔄 Refresh Analysis</button>
+                    <span class="auto-refresh">Technical indicators updated every 5 minutes</span>
+                </div>
+
+                <div style="margin: 30px 0;">
+                    <h2 style="text-align: center; color: #2c3e50; margin-bottom: 20px;">📈 Portfolio Technical Analysis</h2>
+                    <div class="category-overview" id="analysisOverview">
+                        <!-- Analysis overview will be inserted here -->
+                    </div>
+                </div>
+
+                <div id="analysisResults">
+                    <p style="text-align: center; color: #7f8c8d; font-style: italic;">
+                        Click "Refresh Analysis" to load technical indicators and fundamental data for all portfolio stocks.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentPage = 'portfolio';
+        let currentAnalysisView = 'basic';
+        let countdown = 30;
+        let usingRealData = true;
+        let expandedStock = null;
+        let fundamentalData = {};
+        let technicalData = {};
+        let newsData = {};
+        let recommendationData = {};
+
+        const API_KEY = 'd2ehrdhr01qlu2qutobgd2ehrdhr01qlu2qutoc0';
+
+        // Portfolio data with categories
+        const portfolioData = {
+            "ai-ml": [
+                {"ticker": "PLTR", "name": "Palantir Technologies Inc", "units": 1.58635378, "avg_buy": 157.13, "live": 185.37, "current_value": 294.06},
+                {"ticker": "SOUN", "name": "Soundhound Ai Inc", "units": 6.92488262, "avg_buy": 14.40, "live": 15.65, "current_value": 108.37},
+                {"ticker": "BBAI", "name": "Bigbear.ai Holdings Inc", "units": 22.19377896, "avg_buy": 6.74, "live": 5.66, "current_value": 125.62},
+                {"ticker": "TEM", "name": "Tempus AI", "units": 0.71535704, "avg_buy": 58.14, "live": 69.93, "current_value": 50.02}
+            ],
+            "quantum": [
+                {"ticker": "RGTI", "name": "Rigetti Computing Inc", "units": 9.17546012, "avg_buy": 16.30, "live": 16.27, "current_value": 149.28},
+                {"ticker": "QUBT", "name": "Quantum Computing Inc", "units": 6.06629412, "avg_buy": 16.25, "live": 15.64, "current_value": 94.88},
+                {"ticker": "IONQ", "name": "IonQ Inc", "units": 1.17497595, "avg_buy": 42.43, "live": 40.98, "current_value": 48.15},
+                {"ticker": "QNTM", "name": "Quantum Biopharma Ltd.", "units": 2.56670262, "avg_buy": 27.81, "live": 24.25, "current_value": 62.24}
+            ],
+            "semiconductor": [
+                {"ticker": "NVDA", "name": "Nvidia Corporation", "units": 0.48263693, "avg_buy": 165.26, "live": 181.52, "current_value": 87.61},
+                {"ticker": "AMD", "name": "Advanced Micro Devices, Inc.", "units": 0.85954022, "avg_buy": 174.00, "live": 184.02, "current_value": 158.17},
+                {"ticker": "AVGO", "name": "Broadcom Inc.", "units": 0.34528157, "avg_buy": 288.78, "live": 306.73, "current_value": 105.91},
+                {"ticker": "TSM", "name": "Taiwan Semiconductor Manufacturing Co.", "units": 0.33839798, "avg_buy": 235.70, "live": 241.98, "current_value": 81.89}
+            ],
+            "cloud-enterprise": [
+                {"ticker": "SNOW", "name": "Snowflake Inc.", "units": 0.23724673, "avg_buy": 210.12, "live": 195.72, "current_value": 46.43},
+                {"ticker": "ORCL", "name": "Oracle Corp.", "units": 0.33862786, "avg_buy": 235.54, "live": 245.27, "current_value": 83.06},
+                {"ticker": "SNPS", "name": "Synopsys Inc.", "units": 0.16405909, "avg_buy": 607.77, "live": 617.62, "current_value": 101.33},
+                {"ticker": "CRWD", "name": "CrowdStrike Holdings, Inc.", "units": 0.15064688, "avg_buy": 463.27, "live": 429.90, "current_value": 64.76}
+            ],
+            "crypto-mining": [
+                {"ticker": "APLD", "name": "Applied Digital Corp", "units": 9.83720930, "avg_buy": 14.19, "live": 14.60, "current_value": 143.62},
+                {"ticker": "IREN", "name": "Iris Energy Limited", "units": 4.43566532, "avg_buy": 15.73, "live": 18.10, "current_value": 80.29}
+            ],
+            "energy": [
+                {"ticker": "OKLO", "name": "Oklo Inc", "units": 1.60928537, "avg_buy": 74.35, "live": 76.51, "current_value": 123.13},
+                {"ticker": "CCJ", "name": "Cameco Corporation", "units": 1.32066225, "avg_buy": 75.50, "live": 75.40, "current_value": 99.58},
+                {"ticker": "VST", "name": "Vistra Energy Corp.", "units": 0.23014934, "avg_buy": 181.97, "live": 203.50, "current_value": 46.84},
+                {"ticker": "GEV", "name": "GE Vernova Inc", "units": 0.07709200, "avg_buy": 646.63, "live": 628.98, "current_value": 48.49}
+            ],
+            "big-tech": [
+                {"ticker": "META", "name": "Meta Platforms Inc", "units": 0.06947553, "avg_buy": 717.52, "live": 783.45, "current_value": 54.43},
+                {"ticker": "AMZN", "name": "Amazon.com Inc.", "units": 0.22271260, "avg_buy": 225.22, "live": 224.02, "current_value": 49.89}
+            ],
+            "other-tech": [
+                {"ticker": "CRWV", "name": "Coreweave Inc.", "units": 0.82120852, "avg_buy": 145.70, "live": 121.64, "current_value": 99.89},
+                {"ticker": "ONDS", "name": "Ondas Holdings Inc", "units": 33.45973154, "avg_buy": 2.98, "live": 3.54, "current_value": 118.45},
+                {"ticker": "NBIS", "name": "Nebius Group N.V.", "units": 1.86269381, "avg_buy": 53.53, "live": 69.73, "current_value": 129.89},
+                {"ticker": "ANET", "name": "Arista Networks, Inc.", "units": 0.43759239, "avg_buy": 113.92, "live": 136.93, "current_value": 59.92},
+                {"ticker": "ZETA", "name": "Zeta Global Holdings Corp", "units": 5.1159569, "avg_buy": 19.49, "live": 18.43, "current_value": 94.31}
+            ]
+        };
+
+        // Watchlist data
+        const watchlistData = {
+            "ai-ml": [
+                {"ticker": "CRNC", "name": "Cerence Inc", "aug4_price": 12.50, "live": 11.80},
+                {"ticker": "APP", "name": "AppLovin Corp", "aug4_price": 58.30, "live": 62.15},
+                {"ticker": "AISP", "name": "Airship AI Holdings Inc", "aug4_price": 8.25, "live": 7.90},
+                {"ticker": "CCCS", "name": "CCC Intelligent Solutions Holdings Inc.", "aug4_price": 9.80, "live": 10.20},
+                {"ticker": "PATH", "name": "UiPath, Inc.", "aug4_price": 12.75, "live": 11.95},
+                {"ticker": "INOD", "name": "Innodata Inc", "aug4_price": 45.60, "live": 48.30},
+                {"ticker": "UPST", "name": "Upstart Holdings, Inc.", "aug4_price": 28.40, "live": 26.85}
+            ],
+            "big-tech": [
+                {"ticker": "GOOG", "name": "Alphabet Inc. - Class C", "aug4_price": 164.50, "live": 168.20}
+            ],
+            "semiconductor": [
+                {"ticker": "ASML", "name": "ASML Holding NV", "aug4_price": 890.25, "live": 915.60},
+                {"ticker": "AMAT", "name": "Applied Materials, Inc.", "aug4_price": 195.80, "live": 203.45},
+                {"ticker": "MU", "name": "Micron Technology Inc.", "aug4_price": 92.15, "live": 89.75}
+            ],
+            "cloud-enterprise": [
+                {"ticker": "NOW", "name": "ServiceNow, Inc.", "aug4_price": 785.30, "live": 812.50},
+                {"ticker": "CRM", "name": "Salesforce Inc", "aug4_price": 248.90, "live": 256.40}
+            ],
+            "energy": [
+                {"ticker": "CEG", "name": "Constellation Energy Corp", "aug4_price": 175.60, "live": 182.30},
+                {"ticker": "SMR", "name": "NuScale Power Corp", "aug4_price": 8.45, "live": 7.95},
+                {"ticker": "MIR", "name": "Mirion Technologies Inc", "aug4_price": 11.20, "live": 10.85}
+            ],
+            "etf": [
+                {"ticker": "XAIX", "name": "Xtrackers Artificial Intelligence ETF", "aug4_price": 28.90, "live": 30.15},
+                {"ticker": "ROBT", "name": "First Trust Nasdaq AI ETF", "aug4_price": 56.40, "live": 58.20},
+                {"ticker": "IGPT", "name": "Invesco AI and Next Gen Software ETF", "aug4_price": 24.75, "live": 25.60},
+                {"ticker": "FAI", "name": "First Trust Bloomberg AI ETF", "aug4_price": 27.30, "live": 28.45},
+                {"ticker": "ARTY", "name": "iShares Future AI & Tech ETF", "aug4_price": 32.80, "live": 34.10},
+                {"ticker": "WTAI", "name": "WisdomTree AI and Innovation ETF", "aug4_price": 45.20, "live": 46.85},
+                {"ticker": "THNQ", "name": "ROBO Global AI ETF", "aug4_price": 38.70, "live": 39.95},
+                {"ticker": "ARKQ", "name": "ARK Autonomous Technology ETF", "aug4_price": 42.15, "live": 41.20},
+                {"ticker": "ROBO", "name": "ROBO Global Robotics ETF", "aug4_price": 49.80, "live": 51.25},
+                {"ticker": "AIQ", "name": "Global X AI & Technology ETF", "aug4_price": 26.40, "live": 27.30},
+                {"ticker": "WISE", "name": "Themes Generative AI ETF", "aug4_price": 22.85, "live": 23.70},
+                {"ticker": "BOTZ", "name": "Global X Robotics & AI ETF", "aug4_price": 31.60, "live": 32.85},
+                {"ticker": "ESPO", "name": "VanEck Video Gaming eSports ETF", "aug4_price": 58.90, "live": 60.20}
+            ],
+            "transport": [
+                {"ticker": "RCAT", "name": "Red Cat Holdings Inc", "aug4_price": 4.85, "live": 5.20},
+                {"ticker": "JOBY", "name": "Joby Aviation Inc", "aug4_price": 5.65, "live": 5.30},
+                {"ticker": "ACHR", "name": "Archer Aviation Inc", "aug4_price": 3.95, "live": 4.15}
+            ],
+            "other": [
+                {"ticker": "ABVX", "name": "Abivax S.A.", "aug4_price": 18.75, "live": 17.90},
+                {"ticker": "MELI", "name": "MercadoLibre, Inc.", "aug4_price": 1650.40, "live": 1720.85},
+                {"ticker": "UNH", "name": "UnitedHealth Group Inc", "aug4_price": 585.20, "live": 598.75},
+                {"ticker": "VRT", "name": "Vertiv Holdings Co", "aug4_price": 89.30, "live": 92.80},
+                {"ticker": "DLR", "name": "Digital Realty Trust Inc.", "aug4_price": 142.60, "live": 145.30},
+                {"ticker": "KEX", "name": "Kirby Corporation", "aug4_price": 115.80, "live": 118.95},
+                {"ticker": "HIT", "name": "Health In Tech", "aug4_price": 15.40, "live": 14.85}
+            ]
+        };
+
+        // Utility Functions
+        function formatCurrency(amount) {
+            if (isNaN(amount) || amount === null || amount === undefined) {
+                return '$0.00';
+            }
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            }).format(amount);
+        }
+
+        function formatNumber(num, decimals = 2) {
+            if (isNaN(num) || num === null || num === undefined) {
+                return '--';
+            }
+            return num.toFixed(decimals);
+        }
+
+        function formatLargeNumber(num) {
+            if (isNaN(num) || num === null || num === undefined) {
+                return '--';
+            }
+            if (num >= 1e12) return (num / 1e12).toFixed(1) + 'T';
+            if (num >= 1e9) return (num / 1e9).toFixed(1) + 'B';
+            if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
+            if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
+            return num.toFixed(0);
+        }
+
+        function calculatePnL(stock) {
+            const costBasis = stock.units * stock.avg_buy;
+            const currentValue = stock.units * stock.live;
+            const pnl = currentValue - costBasis;
+            const pnlPercent = (pnl / costBasis) * 100;
+            return { pnl, pnlPercent, currentValue, costBasis };
+        }
+
+        function calculateWatchlistPnL(stock) {
+            const pnl = stock.live - stock.aug4_price;
+            const pnlPercent = (pnl / stock.aug4_price) * 100;
+            return { pnl, pnlPercent };
+        }
+
+        function calculateCategoryTotals(stocks) {
+            let totalCostBasis = 0;
+            let totalMarketValue = 0;
+            let winners = 0;
+            
+            stocks.forEach(stock => {
+                const { pnl, currentValue, costBasis } = calculatePnL(stock);
+                totalCostBasis += costBasis;
+                totalMarketValue += currentValue;
+                if (pnl > 0) winners++;
+            });
+            
+            const totalPnL = totalMarketValue - totalCostBasis;
+            const totalPnLPercent = totalCostBasis > 0 ? (totalPnL / totalCostBasis) * 100 : 0;
+            
+            return {
+                totalCostBasis,
+                totalMarketValue,
+                totalPnL,
+                totalPnLPercent,
+                winners,
+                losers: stocks.length - winners,
+                count: stocks.length
+            };
+        }
+
+        function calculateWatchlistCategoryTotals(stocks) {
+            let totalGainers = 0;
+            let totalLosers = 0;
+            let totalPnLPercent = 0;
+            
+            stocks.forEach(stock => {
+                const { pnlPercent } = calculateWatchlistPnL(stock);
+                totalPnLPercent += pnlPercent;
+                if (pnlPercent > 0) totalGainers++;
+                else if (pnlPercent < 0) totalLosers++;
+            });
+            
+            const avgPnLPercent = stocks.length > 0 ? totalPnLPercent / stocks.length : 0;
+            
+            return {
+                avgPnLPercent,
+                totalGainers,
+                totalLosers,
+                count: stocks.length
+            };
+        }
+
+        // API Functions for Analysis
+        async function fetchFundamentalData(ticker) {
+            try {
+                const [profileRes, metricsRes, financialsRes] = await Promise.all([
+                    fetch(`https://finnhub.io/api/v1/stock/profile2?symbol=${ticker}&token=${API_KEY}`),
+                    fetch(`https://finnhub.io/api/v1/stock/metric?symbol=${ticker}&metric=all&token=${API_KEY}`),
+                    fetch(`https://finnhub.io/api/v1/stock/financials?symbol=${ticker}&statement=ic&freq=annual&token=${API_KEY}`)
+                ]);
+
+                const [profile, metrics, financials] = await Promise.all([
+                    profileRes.ok ? profileRes.json() : {},
+                    metricsRes.ok ? metricsRes.json() : {},
+                    financialsRes.ok ? financialsRes.json() : {}
+                ]);
+
+                return {
+                    profile,
+                    metrics: metrics.metric || {},
+                    financials: financials.financials || []
+                };
+            } catch (error) {
+                console.log(`Error fetching fundamental data for ${ticker}:`, error);
+                return { profile: {}, metrics: {}, financials: [] };
+            }
+        }
+
+        async function fetchTechnicalIndicators(ticker) {
+            try {
+                const toDate = Math.floor(Date.now() / 1000);
+                const fromDate = toDate - (365 * 24 * 60 * 60); // 1 year ago
+
+                const [rsiRes, macdRes, recommendationRes] = await Promise.all([
+                    fetch(`https://finnhub.io/api/v1/indicator?symbol=${ticker}&resolution=D&from=${fromDate}&to=${toDate}&indicator=rsi&timeperiod=14&token=${API_KEY}`),
+                    fetch(`https://finnhub.io/api/v1/indicator?symbol=${ticker}&resolution=D&from=${fromDate}&to=${toDate}&indicator=macd&token=${API_KEY}`),
+                    fetch(`https://finnhub.io/api/v1/stock/recommendation?symbol=${ticker}&token=${API_KEY}`)
+                ]);
+
+                const [rsi, macd, recommendation] = await Promise.all([
+                    rsiRes.ok ? rsiRes.json() : {},
+                    macdRes.ok ? macdRes.json() : {},
+                    recommendationRes.ok ? recommendationRes.json() : []
+                ]);
+
+                return { rsi, macd, recommendation: recommendation[0] || {} };
+            } catch (error) {
+                console.log(`Error fetching technical data for ${ticker}:`, error);
+                return { rsi: {}, macd: {}, recommendation: {} };
+            }
+        }
+
+        async function fetchCompanyNews(ticker) {
+            try {
+                const toDate = new Date().toISOString().split('T')[0];
+                const fromDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                
+                const [newsRes, sentimentRes] = await Promise.all([
+                    fetch(`https://finnhub.io/api/v1/company-news?symbol=${ticker}&from=${fromDate}&to=${toDate}&token=${API_KEY}`),
+                    fetch(`https://finnhub.io/api/v1/news-sentiment?symbol=${ticker}&token=${API_KEY}`)
+                ]);
+
+                const [news, sentiment] = await Promise.all([
+                    newsRes.ok ? newsRes.json() : [],
+                    sentimentRes.ok ? sentimentRes.json() : {}
+                ]);
+
+                return { news: news.slice(0, 5), sentiment }; // Limit to 5 recent news items
+            } catch (error) {
+                console.log(`Error fetching news for ${ticker}:`, error);
+                return { news: [], sentiment: {} };
+            }
+        }
+
+        // Page Navigation
+        function switchPage(page) {
+            currentPage = page;
+            
+            // Update active tab
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            const tabIndex = page === 'portfolio' ? 1 : page === 'watchlist' ? 2 : 3;
+            document.querySelector(`.nav-tab:nth-child(${tabIndex})`).classList.add('active');
+            
+            // Update active page content
+            document.querySelectorAll('.page-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(`${page}Page`).classList.add('active');
+            
+            // Render appropriate content
+            if (page === 'portfolio') {
+                renderPortfolio();
+            } else if (page === 'watchlist') {
+                renderWatchlist();
+            } else if (page === 'analysis') {
+                renderAnalysisPage();
+            }
+            
+            console.log(`Switched to ${page} page`);
+        }
+
+        function toggleAnalysisView(view) {
+            currentAnalysisView = view;
+            
+            // Update active button
+            document.querySelectorAll('.analysis-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Re-render portfolio with new view
+            renderPortfolio();
+        }
+
+        // Enhanced Stock Card Creation
+        function createStockCard(stock, showAnalysis = false) {
+            const { pnl, pnlPercent, currentValue } = calculatePnL(stock);
+            const performanceClass = pnl > 0 ? 'profit' : pnl < 0 ? 'loss' : 'neutral';
+            const pnlColor = pnl > 0 ? '#2ecc71' : pnl < 0 ? '#e74c3c' : '#95a5a6';
+            
+            const fundamental = fundamentalData[stock.ticker] || {};
+            const technical = technicalData[stock.ticker] || {};
+            const news = newsData[stock.ticker] || {};
+
+            let analysisSection = '';
+            
+            if (showAnalysis && currentAnalysisView !== 'basic') {
+                if (currentAnalysisView === 'fundamental') {
+                    analysisSection = createFundamentalSection(stock.ticker, fundamental);
+                } else if (currentAnalysisView === 'technical') {
+                    analysisSection = createTechnicalSection(stock.ticker, technical);
+                }
+            }
+
+            return `
+                <div class="stock-card ${showAnalysis ? 'expanded' : ''}" onclick="toggleStockExpansion('${stock.ticker}')">
+                    <button class="expand-btn" onclick="event.stopPropagation(); toggleStockExpansion('${stock.ticker}')">
+                        ${showAnalysis ? '🗙' : '📊'}
+                    </button>
+                    <div class="stock-header">
+                        <div>
+                            <div class="stock-symbol">${stock.ticker}</div>
+                            <div class="stock-name">${stock.name}</div>
+                        </div>
+                        <div class="performance-indicator ${performanceClass}"></div>
+                    </div>
+                    <div class="stock-metrics">
+                        <div class="metric">
+                            <div class="metric-label">Live Price</div>
+                            <div class="metric-value">${formatCurrency(stock.live)}</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Invested</div>
+                            <div class="metric-value">${formatCurrency(stock.units * stock.avg_buy)}</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Current Value</div>
+                            <div class="metric-value">${formatCurrency(currentValue)}</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">P&L</div>
+                            <div class="metric-value" style="color: ${pnlColor}">${formatCurrency(pnl)}</div>
+                        </div>
+                        <div class="metric" style="grid-column: 1 / -1; margin-top: 5px;">
+                            <div class="metric-label">P&L Percentage</div>
+                            <div class="metric-value" style="color: ${pnlColor}; font-size: 1.1em;">${pnlPercent >= 0 ? '+' : ''}${pnlPercent.toFixed(2)}%</div>
+                        </div>
+                    </div>
+                    <div class="pnl-bar">
+                        <div class="pnl-fill" style="background: ${pnlColor}; width: ${Math.min(Math.abs(pnlPercent), 100)}%"></div>
+                    </div>
+                    ${analysisSection}
+                </div>
+            `;
+        }
+
+        function createFundamentalSection(ticker, fundamental) {
+            const profile = fundamental.profile || {};
+            const metrics = fundamental.metrics || {};
+            
+            return `
+                <div class="analysis-section active">
+                    <h4 style="color: #2c3e50; margin-bottom: 15px;">📋 Fundamental Analysis</h4>
+                    <div class="analysis-grid">
+                        <div class="analysis-card">
+                            <div class="analysis-title">Market Cap</div>
+                            <div class="analysis-value">${formatLargeNumber(profile.marketCapitalization)}</div>
+                        </div>
+                        <div class="analysis-card">
+                            <div class="analysis-title">P/E Ratio</div>
+                            <div class="analysis-value">${formatNumber(metrics.peBasicExclExtraTTM)}</div>
+                        </div>
+                        <div class="analysis-card">
+                            <div class="analysis-title">EPS</div>
+                            <div class="analysis-value">${formatCurrency(metrics.epsBasicExclExtraordItemsTTM)}</div>
+                        </div>
+                        <div class="analysis-card">
+                            <div class="analysis-title">Revenue TTM</div>
+                            <div class="analysis-value">${formatLargeNumber(metrics.revenueTTM)}</div>
+                        </div>
+                        <div class="analysis-card">
+                            <div class="analysis-title">Profit Margin</div>
+                            <div class="analysis-value">${formatNumber(metrics.netProfitMarginTTM)}%</div>
+                        </div>
+                        <div class="analysis-card">
+                            <div class="analysis-title">ROE</div>
+                            <div class="analysis-value">${formatNumber(metrics.roeTTM)}%</div>
+                        </div>
+                        <div class="analysis-card">
+                            <div class="analysis-title">Debt/Equity</div>
+                            <div class="analysis-value">${formatNumber(metrics.totalDebt2EquityQuarterly)}</div>
+                        </div>
+                        <div class="analysis-card">
+                            <div class="analysis-title">52W High</div>
+                            <div class="analysis-value">${formatCurrency(metrics['52WeekHigh'])}</div>
+                        </div>
+                    </div>
+                    ${createCompanyInfo(profile)}
+                </div>
+            `;
+        }
+
+        function createTechnicalSection(ticker, technical) {
+            const rsi = technical.rsi || {};
+            const recommendation = technical.recommendation || {};
+            
+            // Get latest RSI value
+            const latestRSI = rsi.rsi && rsi.rsi.length > 0 ? rsi.rsi[rsi.rsi.length - 1] : null;
+            
+            return `
+                <div class="analysis-section active">
+                    <h4 style="color: #2c3e50; margin-bottom: 15px;">📈 Technical Analysis</h4>
+                    <div class="technical-indicators">
+                        <div class="technical-card">
+                            <div class="technical-label">RSI (14)</div>
+                            <div class="technical-value" style="color: ${getRSIColor(latestRSI)}">${formatNumber(latestRSI)}</div>
+                        </div>
+                        <div class="technical-card">
+                            <div class="technical-label">Signal</div>
+                            <div class="technical-value">${getRSISignal(latestRSI)}</div>
+                        </div>
+                        <div class="technical-card">
+                            <div class="technical-label">Strong Buy</div>
+                            <div class="technical-value" style="color: #2ecc71">${recommendation.strongBuy || 0}</div>
+                        </div>
+                        <div class="technical-card">
+                            <div class="technical-label">Buy</div>
+                            <div class="technical-value" style="color: #27ae60">${recommendation.buy || 0}</div>
+                        </div>
+                        <div class="technical-card">
+                            <div class="technical-label">Hold</div>
+                            <div class="technical-value" style="color: #f39c12">${recommendation.hold || 0}</div>
+                        </div>
+                        <div class="technical-card">
+                            <div class="technical-label">Sell</div>
+                            <div class="technical-value" style="color: #e74c3c">${recommendation.sell || 0}</div>
+                        </div>
+                    </div>
+                    ${createRecommendationSummary(recommendation)}
+                    ${createNewsSection(ticker)}
+                </div>
+            `;
+        }
+
+        function createCompanyInfo(profile) {
+            if (!profile.name) return '';
+            
+            return `
+                <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                    <h5 style="color: #2c3e50; margin-bottom: 10px;">Company Profile</h5>
+                    <div style="font-size: 0.85em; color: #495057;">
+                        <strong>Industry:</strong> ${profile.finnhubIndustry || 'N/A'}<br>
+                        <strong>Country:</strong> ${profile.country || 'N/A'}<br>
+                        <strong>Employees:</strong> ${formatLargeNumber(profile.employeeTotal)}<br>
+                        <strong>IPO:</strong> ${profile.ipo || 'N/A'}
+                    </div>
+                </div>
+            `;
+        }
+
+        function createRecommendationSummary(rec) {
+            if (!rec.strongBuy && !rec.buy && !rec.hold && !rec.sell) return '';
+            
+            const total = (rec.strongBuy || 0) + (rec.buy || 0) + (rec.hold || 0) + (rec.sell || 0) + (rec.strongSell || 0);
+            const buyRatio = ((rec.strongBuy || 0) + (rec.buy || 0)) / total;
+            
+            let overallRec = 'HOLD';
+            let recClass = 'rec-hold';
+            
+            if (buyRatio >= 0.6) {
+                overallRec = 'BUY';
+                recClass = 'rec-buy';
+            } else if (buyRatio >= 0.8) {
+                overallRec = 'STRONG BUY';
+                recClass = 'rec-strong-buy';
+            } else if (buyRatio <= 0.3) {
+                overallRec = 'SELL';
+                recClass = 'rec-sell';
+            }
+            
+            return `
+                <div style="text-align: center; margin: 15px 0;">
+                    <div style="font-size: 0.85em; color: #6c757d; margin-bottom: 8px;">
+                        Analyst Consensus (${total} analysts)
+                    </div>
+                    <span class="recommendation-badge ${recClass}">${overallRec}</span>
+                </div>
+            `;
+        }
+
+        function createNewsSection(ticker) {
+            const stockNews = newsData[ticker] || {};
+            const news = stockNews.news || [];
+            
+            if (news.length === 0) return '';
+            
+            return `
+                <div class="news-section">
+                    <h5 style="color: #2c3e50; margin-bottom: 10px;">📰 Recent News</h5>
+                    ${news.map(item => `
+                        <div class="news-item">
+                            <div class="news-headline">${item.headline}</div>
+                            <div class="news-source">
+                                ${item.source} • ${new Date(item.datetime * 1000).toLocaleDateString()}
+                                <span class="sentiment-indicator ${getSentimentClass(item.sentiment)}"></span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function getRSIColor(rsi) {
+            if (!rsi || isNaN(rsi)) return '#95a5a6';
+            if (rsi >= 70) return '#e74c3c'; // Overbought
+            if (rsi <= 30) return '#2ecc71'; // Oversold
+            return '#3498db'; // Normal
+        }
+
+        function getRSISignal(rsi) {
+            if (!rsi || isNaN(rsi)) return 'N/A';
+            if (rsi >= 70) return 'Overbought';
+            if (rsi <= 30) return 'Oversold';
+            return 'Neutral';
+        }
+
+        function getSentimentClass(sentiment) {
+            if (sentiment > 0.1) return 'sentiment-positive';
+            if (sentiment < -0.1) return 'sentiment-negative';
+            return 'sentiment-neutral';
+        }
+
+        function toggleStockExpansion(ticker) {
+            if (expandedStock === ticker) {
+                expandedStock = null;
+            } else {
+                expandedStock = ticker;
+                // Fetch analysis data if not already loaded
+                if (currentAnalysisView !== 'basic' && !fundamentalData[ticker] && !technicalData[ticker]) {
+                    fetchStockAnalysis(ticker);
+                }
+            }
+            renderPortfolio();
+        }
+
+        async function fetchStockAnalysis(ticker) {
+            console.log(`🔍 Fetching analysis for ${ticker}...`);
+            
+            const [fundamental, technical, news] = await Promise.all([
+                fetchFundamentalData(ticker),
+                fetchTechnicalIndicators(ticker),
+                fetchCompanyNews(ticker)
+            ]);
+            
+            fundamentalData[ticker] = fundamental;
+            technicalData[ticker] = technical;
+            newsData[ticker] = news;
+            
+            console.log(`✅ Analysis loaded for ${ticker}`);
+            renderPortfolio();
+        }
+
+        async function fetchAllAnalysis() {
+            console.log('🔍 Fetching comprehensive analysis for all stocks...');
+            
+            const allStocks = Object.values(portfolioData).flat();
+            const button = event.target;
+            const originalText = button.textContent;
+            
+            button.textContent = '⏳ Loading Analysis...';
+            button.disabled = true;
+            
+            try {
+                const promises = allStocks.map(stock => fetchStockAnalysis(stock.ticker));
+                await Promise.all(promises);
+                
+                // Switch to fundamental view to show the results
+                currentAnalysisView = 'fundamental';
+                document.querySelectorAll('.analysis-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelector('.analysis-btn:nth-child(2)').classList.add('active');
+                
+                renderPortfolio();
+                console.log('✅ All analysis data loaded!');
+                
+            } catch (error) {
+                console.error('❌ Error loading analysis:', error);
+            } finally {
+                button.textContent = originalText;
+                button.disabled = false;
+            }
+        }
+
+        // Rendering Functions
+        function createWatchlistCard(stock) {
+            const { pnl, pnlPercent } = calculateWatchlistPnL(stock);
+            const performanceClass = pnl > 0 ? 'profit' : pnl < 0 ? 'loss' : 'neutral';
+            const pnlColor = pnl > 0 ? '#2ecc71' : pnl < 0 ? '#e74c3c' : '#95a5a6';
+            
+            return `
+                <div class="stock-card">
+                    <div class="stock-header">
+                        <div>
+                            <div class="stock-symbol">${stock.ticker}</div>
+                            <div class="stock-name">${stock.name}</div>
+                        </div>
+                        <div class="performance-indicator ${performanceClass}"></div>
+                    </div>
+                    <div class="stock-metrics">
+                        <div class="metric">
+                            <div class="metric-label">Aug 4, 2025 Price</div>
+                            <div class="metric-value">${formatCurrency(stock.aug4_price)}</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Current Price</div>
+                            <div class="metric-value">${formatCurrency(stock.live)}</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Change ($)</div>
+                            <div class="metric-value" style="color: ${pnlColor}">${formatCurrency(pnl)}</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Change (%)</div>
+                            <div class="metric-value" style="color: ${pnlColor}">${pnlPercent >= 0 ? '+' : ''}${pnlPercent.toFixed(2)}%</div>
+                        </div>
+                        <div class="metric" style="grid-column: 1 / -1; margin-top: 5px;">
+                            <div class="metric-label">Performance Since Aug 4, 2025 (10 days)</div>
+                            <div class="metric-value" style="color: ${pnlColor}; font-size: 1.1em;">${pnlPercent >= 0 ? '+' : ''}${pnlPercent.toFixed(2)}%</div>
+                        </div>
+                    </div>
+                    <div class="pnl-bar">
+                        <div class="pnl-fill" style="background: ${pnlColor}; width: ${Math.min(Math.abs(pnlPercent), 100)}%"></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Category Header Creation
+        function createCategoryHeader(categoryKey, stocks, riskLevel) {
+            const totals = calculateCategoryTotals(stocks);
+            const pnlColor = totals.totalPnL >= 0 ? '#2ecc71' : '#e74c3c';
+            const pnlSign = totals.totalPnL >= 0 ? '+' : '';
+            
+            const categoryTitles = {
+                'ai-ml': '🤖 AI/ML & Analytics',
+                'quantum': '⚛️ Quantum Computing',
+                'semiconductor': '💾 Semiconductor & Hardware',
+                'cloud-enterprise': '☁️ Cloud & Enterprise Software',
+                'crypto-mining': '₿ Crypto & Mining',
+                'energy': '⚡ Energy & Nuclear',
+                'big-tech': '🏢 Big Tech',
+                'other-tech': '🔧 Other Technology'
+            };
+            
+            const riskBadges = {
+                'HIGH RISK': 'risk-high',
+                'MEDIUM RISK': 'risk-medium',
+                'LOW RISK': 'risk-low'
+            };
+            
+            return `
+                <div class="category-title">
+                    <span>${categoryTitles[categoryKey]}</span>
+                    <span class="risk-badge ${riskBadges[riskLevel]}">${riskLevel}</span>
+                </div>
+                <div class="category-summary">
+                    <div class="category-pnl">
+                        <strong>${formatCurrency(totals.totalMarketValue)}</strong>
+                        <span style="color: ${pnlColor}; margin-left: 10px;">
+                            ${pnlSign}${formatCurrency(totals.totalPnL)} (${totals.totalPnLPercent.toFixed(1)}%)
+                        </span>
+                    </div>
+                    <div style="opacity: 0.9;">
+                        ${totals.count} stocks | ${totals.winners} up | ${totals.losers} down
+                    </div>
+                </div>
+            `;
+        }
+
+        function createWatchlistCategoryHeader(categoryKey, stocks, riskLevel) {
+            const totals = calculateWatchlistCategoryTotals(stocks);
+            const pnlColor = totals.avgPnLPercent >= 0 ? '#2ecc71' : '#e74c3c';
+            const pnlSign = totals.avgPnLPercent >= 0 ? '+' : '';
+            
+            const categoryTitles = {
+                'ai-ml': '🤖 AI/ML & Analytics',
+                'big-tech': '🏢 Big Tech',
+                'semiconductor': '💾 Semiconductor & Hardware',
+                'cloud-enterprise': '☁️ Cloud & Enterprise Software',
+                'energy': '⚡ Energy & Nuclear',
+                'etf': '📈 AI/Tech ETFs',
+                'transport': '✈️ Transportation & Aviation',
+                'other': '🏭 Other Sectors'
+            };
+            
+            const riskBadges = {
+                'HIGH RISK': 'risk-high',
+                'MEDIUM RISK': 'risk-medium',
+                'LOW RISK': 'risk-low'
+            };
+            
+            return `
+                <div class="category-title">
+                    <span>${categoryTitles[categoryKey]}</span>
+                    <span class="risk-badge ${riskBadges[riskLevel]}">${riskLevel}</span>
+                </div>
+                <div class="category-summary">
+                    <div class="category-pnl">
+                        <strong>Avg: ${pnlSign}${totals.avgPnLPercent.toFixed(1)}%</strong>
+                    </div>
+                    <div style="opacity: 0.9;">
+                        ${totals.count} stocks | ${totals.totalGainers} up | ${totals.totalLosers} down
+                    </div>
+                </div>
+            `;
+        }
+
+        // Overview Card Creation
+        function createCategoryOverviewCard(categoryKey, stocks, riskLevel) {
+            const totals = calculateCategoryTotals(stocks);
+            const pnlColor = totals.totalPnL >= 0 ? '#2ecc71' : '#e74c3c';
+            const pnlSign = totals.totalPnL >= 0 ? '+' : '';
+            
+            const categoryTitles = {
+                'ai-ml': '🤖 AI/ML & Analytics',
+                'quantum': '⚛️ Quantum Computing',
+                'semiconductor': '💾 Semiconductor & Hardware',
+                'cloud-enterprise': '☁️ Cloud & Enterprise',
+                'crypto-mining': '₿ Crypto & Mining',
+                'energy': '⚡ Energy & Nuclear',
+                'big-tech': '🏢 Big Tech',
+                'other-tech': '🔧 Other Technology'
+            };
+            
+            const riskClasses = {
+                'HIGH RISK': 'risk-high',
+                'MEDIUM RISK': 'risk-medium',
+                'LOW RISK': 'risk-low'
+            };
+            
+            return `
+                <div class="overview-card">
+                    <div class="overview-header">
+                        <div class="overview-title">${categoryTitles[categoryKey]}</div>
+                        <div class="overview-risk ${riskClasses[riskLevel]}">${riskLevel}</div>
+                    </div>
+                    <div class="overview-metrics">
+                        <div class="overview-metric">
+                            <div class="overview-metric-label">Invested</div>
+                            <div class="overview-metric-value">${formatCurrency(totals.totalCostBasis)}</div>
+                        </div>
+                        <div class="overview-metric">
+                            <div class="overview-metric-label">Current Value</div>
+                            <div class="overview-metric-value">${formatCurrency(totals.totalMarketValue)}</div>
+                        </div>
+                        <div class="overview-metric">
+                            <div class="overview-metric-label">Stocks</div>
+                            <div class="overview-metric-value">${totals.count}</div>
+                        </div>
+                        <div class="overview-metric">
+                            <div class="overview-metric-label">Winners</div>
+                            <div class="overview-metric-value" style="color: #2ecc71;">${totals.winners}</div>
+                        </div>
+                        <div class="overview-pnl">
+                            <div class="overview-metric-label">Total P&L</div>
+                            <div class="pnl-large" style="color: ${pnlColor};">
+                                ${pnlSign}${formatCurrency(totals.totalPnL)} (${totals.totalPnLPercent.toFixed(1)}%)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createWatchlistOverviewCard(categoryKey, stocks, riskLevel) {
+            const totals = calculateWatchlistCategoryTotals(stocks);
+            const pnlColor = totals.avgPnLPercent >= 0 ? '#2ecc71' : '#e74c3c';
+            const pnlSign = totals.avgPnLPercent >= 0 ? '+' : '';
+            
+            const categoryTitles = {
+                'ai-ml': '🤖 AI/ML & Analytics',
+                'big-tech': '🏢 Big Tech',
+                'semiconductor': '💾 Semiconductor & Hardware',
+                'cloud-enterprise': '☁️ Cloud & Enterprise',
+                'energy': '⚡ Energy & Nuclear',
+                'etf': '📈 AI/Tech ETFs',
+                'transport': '✈️ Transportation & Aviation',
+                'other': '🏭 Other Sectors'
+            };
+            
+            const riskClasses = {
+                'HIGH RISK': 'risk-high',
+                'MEDIUM RISK': 'risk-medium',
+                'LOW RISK': 'risk-low'
+            };
+            
+            return `
+                <div class="overview-card">
+                    <div class="overview-header">
+                        <div class="overview-title">${categoryTitles[categoryKey]}</div>
+                        <div class="overview-risk ${riskClasses[riskLevel]}">${riskLevel}</div>
+                    </div>
+                    <div class="overview-metrics">
+                        <div class="overview-metric">
+                            <div class="overview-metric-label">Avg Performance</div>
+                            <div class="overview-metric-value" style="color: ${pnlColor};">${pnlSign}${totals.avgPnLPercent.toFixed(1)}%</div>
+                        </div>
+                        <div class="overview-metric">
+                            <div class="overview-metric-label">Best Stock</div>
+                            <div class="overview-metric-value">${getBestWatchlistStock(stocks)}</div>
+                        </div>
+                        <div class="overview-metric">
+                            <div class="overview-metric-label">Stocks</div>
+                            <div class="overview-metric-value">${totals.count}</div>
+                        </div>
+                        <div class="overview-metric">
+                            <div class="overview-metric-label">Gainers</div>
+                            <div class="overview-metric-value" style="color: #2ecc71;">${totals.totalGainers}</div>
+                        </div>
+                        <div class="overview-pnl">
+                            <div class="overview-metric-label">Since Aug 4, 2025 (10 days)</div>
+                            <div class="pnl-large" style="color: ${pnlColor};">
+                                ${pnlSign}${totals.avgPnLPercent.toFixed(1)}% Average
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getBestWatchlistStock(stocks) {
+            let bestStock = stocks[0];
+            let bestPerformance = calculateWatchlistPnL(bestStock).pnlPercent;
+            
+            stocks.forEach(stock => {
+                const performance = calculateWatchlistPnL(stock).pnlPercent;
+                if (performance > bestPerformance) {
+                    bestPerformance = performance;
+                    bestStock = stock;
+                }
+            });
+            
+            return bestStock.ticker;
+        }
+
+        function renderCategoryOverview() {
+            const overviewContainer = document.getElementById('categoryOverview');
+            if (!overviewContainer) return;
+            
+            const categoryRiskLevels = {
+                'ai-ml': 'HIGH RISK',
+                'quantum': 'HIGH RISK',
+                'semiconductor': 'MEDIUM RISK',
+                'cloud-enterprise': 'MEDIUM RISK',
+                'crypto-mining': 'HIGH RISK',
+                'energy': 'MEDIUM RISK',
+                'big-tech': 'LOW RISK',
+                'other-tech': 'MEDIUM RISK'
+            };
+            
+            overviewContainer.innerHTML = '';
+            
+            Object.entries(portfolioData).forEach(([categoryKey, stocks]) => {
+                overviewContainer.innerHTML += createCategoryOverviewCard(
+                    categoryKey,
+                    stocks,
+                    categoryRiskLevels[categoryKey]
+                );
+            });
+        }
+
+        function renderWatchlistOverview() {
+            const overviewContainer = document.getElementById('watchlistCategoryOverview');
+            if (!overviewContainer) return;
+            
+            const categoryRiskLevels = {
+                'ai-ml': 'HIGH RISK',
+                'big-tech': 'LOW RISK',
+                'semiconductor': 'MEDIUM RISK',
+                'cloud-enterprise': 'MEDIUM RISK',
+                'energy': 'MEDIUM RISK',
+                'etf': 'MEDIUM RISK',
+                'transport': 'HIGH RISK',
+                'other': 'MEDIUM RISK'
+            };
+            
+            overviewContainer.innerHTML = '';
+            
+            Object.entries(watchlistData).forEach(([categoryKey, stocks]) => {
+                overviewContainer.innerHTML += createWatchlistOverviewCard(
+                    categoryKey,
+                    stocks,
+                    categoryRiskLevels[categoryKey]
+                );
+            });
+        }
+
+        function renderPortfolio() {
+            console.log('🎨 Rendering portfolio...');
+            
+            // Render category overview first
+            renderCategoryOverview();
+            
+            // Clear existing content
+            Object.keys(portfolioData).forEach(category => {
+                const container = document.getElementById(`${category}-stocks`);
+                if (container) {
+                    container.innerHTML = '';
+                }
+            });
+
+            let totalValue = 0;
+            let totalCostBasis = 0;
+            let winners = 0;
+
+            // Define risk levels for each category
+            const categoryRiskLevels = {
+                'ai-ml': 'HIGH RISK',
+                'quantum': 'HIGH RISK',
+                'semiconductor': 'MEDIUM RISK',
+                'cloud-enterprise': 'MEDIUM RISK',
+                'crypto-mining': 'HIGH RISK',
+                'energy': 'MEDIUM RISK',
+                'big-tech': 'LOW RISK',
+                'other-tech': 'MEDIUM RISK'
+            };
+
+            // Calculate totals from all stocks
+            Object.values(portfolioData).flat().forEach(stock => {
+                const { pnl, currentValue, costBasis } = calculatePnL(stock);
+                totalValue += currentValue;
+                totalCostBasis += costBasis;
+                if (pnl > 0) winners++;
+            });
+
+            // Render each category with updated headers
+            Object.entries(portfolioData).forEach(([category, stocks]) => {
+                const container = document.getElementById(`${category}-stocks`);
+                const headerElement = container?.parentNode?.querySelector('.category-header');
+                
+                if (container && headerElement) {
+                    // Update category header with totals
+                    headerElement.innerHTML = createCategoryHeader(
+                        category, 
+                        stocks, 
+                        categoryRiskLevels[category]
+                    );
+                    
+                    // Render stock cards
+                    stocks.forEach(stock => {
+                        const isExpanded = expandedStock === stock.ticker;
+                        container.innerHTML += createStockCard(stock, isExpanded);
+                    });
+                }
+            });
+
+            // Update summary with calculated values
+            const totalPnL = totalValue - totalCostBasis;
+            const totalPnLPercent = totalCostBasis > 0 ? (totalPnL / totalCostBasis) * 100 : 0;
+
+            // Update summary display
+            const totalValueEl = document.getElementById('totalValue');
+            const totalPnLEl = document.getElementById('totalPnL');
+            const totalPnLPercentEl = document.getElementById('totalPnLPercent');
+            const winnersEl = document.getElementById('winners');
+
+            if (totalValueEl) totalValueEl.textContent = formatCurrency(totalValue);
+            if (totalPnLEl) {
+                totalPnLEl.textContent = formatCurrency(totalPnL);
+                totalPnLEl.style.color = totalPnL >= 0 ? '#2ecc71' : '#e74c3c';
+            }
+            if (totalPnLPercentEl) {
+                totalPnLPercentEl.textContent = `${totalPnLPercent >= 0 ? '+' : ''}${totalPnLPercent.toFixed(2)}%`;
+                totalPnLPercentEl.style.color = totalPnLPercent >= 0 ? '#2ecc71' : '#e74c3c';
+            }
+            if (winnersEl) winnersEl.textContent = winners;
+            
+            document.getElementById('lastUpdated').textContent = `Last Updated: ${new Date().toLocaleTimeString()}`;
+            
+            console.log(`✅ Portfolio rendered - Value: ${formatCurrency(totalValue)}, P&L: ${formatCurrency(totalPnL)}, Winners: ${winners}`);
+        }
+
+        function renderWatchlist() {
+            console.log('🎨 Rendering watchlist...');
+            
+            // Render watchlist overview first
+            renderWatchlistOverview();
+            
+            // Clear existing content
+            Object.keys(watchlistData).forEach(category => {
+                const container = document.getElementById(`watchlist-${category}-stocks`);
+                if (container) {
+                    container.innerHTML = '';
+                }
+            });
+
+            let totalStocks = 0;
+            let totalGainers = 0;
+            let allPerformances = [];
+
+            // Define risk levels for each category
+            const categoryRiskLevels = {
+                'ai-ml': 'HIGH RISK',
+                'big-tech': 'LOW RISK',
+                'semiconductor': 'MEDIUM RISK',
+                'cloud-enterprise': 'MEDIUM RISK',
+                'energy': 'MEDIUM RISK',
+                'etf': 'MEDIUM RISK',
+                'transport': 'HIGH RISK',
+                'other': 'MEDIUM RISK'
+            };
+
+            // Render each category
+            Object.entries(watchlistData).forEach(([category, stocks]) => {
+                const container = document.getElementById(`watchlist-${category}-stocks`);
+                const headerElement = container?.parentNode?.querySelector('.category-header');
+                
+                if (container && headerElement) {
+                    // Update category header
+                    headerElement.innerHTML = createWatchlistCategoryHeader(
+                        category,
+                        stocks,
+                        categoryRiskLevels[category]
+                    );
+                    
+                    // Render stock cards
+                    stocks.forEach(stock => {
+                        const { pnlPercent } = calculateWatchlistPnL(stock);
+                        totalStocks++;
+                        allPerformances.push(pnlPercent);
+                        if (pnlPercent > 0) totalGainers++;
+                        
+                        container.innerHTML += createWatchlistCard(stock);
+                    });
+                }
+            });
+
+            // Calculate overall stats
+            const avgPerformance = allPerformances.length > 0 ? allPerformances.reduce((a, b) => a + b, 0) / allPerformances.length : 0;
+            const bestPerformance = allPerformances.length > 0 ? Math.max(...allPerformances) : 0;
+            const worstPerformance = allPerformances.length > 0 ? Math.min(...allPerformances) : 0;
+            
+            // Find best and worst stocks
+            let bestStock = '';
+            let worstStock = '';
+            Object.values(watchlistData).flat().forEach(stock => {
+                const { pnlPercent } = calculateWatchlistPnL(stock);
+                if (pnlPercent === bestPerformance) bestStock = stock.ticker;
+                if (pnlPercent === worstPerformance) worstStock = stock.ticker;
+            });
+
+            // Update summary
+            const elements = {
+                watchlistAvgPerf: `${avgPerformance >= 0 ? '+' : ''}${avgPerformance.toFixed(2)}%`,
+                watchlistBest: `${bestStock} (+${bestPerformance.toFixed(1)}%)`,
+                watchlistWorst: `${worstStock} (${worstPerformance.toFixed(1)}%)`,
+                watchlistGainers: totalGainers,
+                watchlistLastUpdated: `Last Updated: ${new Date().toLocaleTimeString()}`
+            };
+
+            Object.entries(elements).forEach(([id, value]) => {
+                const element = document.getElementById(id);
+                if (element) element.textContent = value;
+            });
+
+            console.log(`✅ Watchlist rendered - ${totalStocks} stocks, ${totalGainers} gainers`);
+        }
+
+        function renderAnalysisPage() {
+            console.log('🎨 Rendering analysis page...');
+            
+            const analysisContainer = document.getElementById('analysisResults');
+            if (!analysisContainer) return;
+
+            // Calculate technical analysis summary
+            const allStocks = Object.values(portfolioData).flat();
+            let overboughtCount = 0;
+            let oversoldCount = 0;
+            let strongBuyCount = 0;
+            let totalAnalysts = 0;
+            let bullishSentiment = 0;
+
+            allStocks.forEach(stock => {
+                const technical = technicalData[stock.ticker];
+                if (technical && technical.rsi && technical.rsi.rsi) {
+                    const latestRSI = technical.rsi.rsi[technical.rsi.rsi.length - 1];
+                    if (latestRSI >= 70) overboughtCount++;
+                    if (latestRSI <= 30) oversoldCount++;
+                }
+
+                if (technical && technical.recommendation) {
+                    const rec = technical.recommendation;
+                    strongBuyCount += rec.strongBuy || 0;
+                    totalAnalysts += (rec.strongBuy || 0) + (rec.buy || 0) + (rec.hold || 0) + (rec.sell || 0) + (rec.strongSell || 0);
+                    
+                    const buyRatio = ((rec.strongBuy || 0) + (rec.buy || 0)) / Math.max(1, (rec.strongBuy || 0) + (rec.buy || 0) + (rec.hold || 0) + (rec.sell || 0) + (rec.strongSell || 0));
+                    if (buyRatio > 0.5) bullishSentiment++;
+                }
+            });
+
+            // Update analysis summary
+            document.getElementById('overboughtCount').textContent = overboughtCount;
+            document.getElementById('oversoldCount').textContent = oversoldCount;
+            document.getElementById('strongBuyCount').textContent = strongBuyCount;
+            document.getElementById('analystCoverage').textContent = `${totalAnalysts} analysts`;
+            
+            const marketSentiment = bullishSentiment > allStocks.length / 2 ? 'Bullish' : 
+                                  bullishSentiment < allStocks.length / 3 ? 'Bearish' : 'Neutral';
+            document.getElementById('marketSentiment').textContent = marketSentiment;
+            document.getElementById('marketSentiment').style.color = 
+                marketSentiment === 'Bullish' ? '#2ecc71' : 
+                marketSentiment === 'Bearish' ? '#e74c3c' : '#f39c12';
+
+            // Render detailed analysis cards
+            analysisContainer.innerHTML = '';
+            
+            Object.entries(portfolioData).forEach(([category, stocks]) => {
+                const categorySection = document.createElement('div');
+                categorySection.className = 'category-section';
+                categorySection.innerHTML = `
+                    <div class="category-header ${category}">
+                        <span>${getCategoryTitle(category)}</span>
+                        <span>📊 Technical Analysis</span>
+                    </div>
+                    <div class="stocks-grid" id="analysis-${category}-stocks"></div>
+                `;
+                analysisContainer.appendChild(categorySection);
+
+                const container = categorySection.querySelector(`#analysis-${category}-stocks`);
+                stocks.forEach(stock => {
+                    container.innerHTML += createAnalysisCard(stock);
+                });
+            });
+
+            document.getElementById('analysisLastUpdated').textContent = `Last Updated: ${new Date().toLocaleTimeString()}`;
+        }
+
+        function getCategoryTitle(categoryKey) {
+            const titles = {
+                'ai-ml': '🤖 AI/ML & Analytics',
+                'quantum': '⚛️ Quantum Computing',
+                'semiconductor': '💾 Semiconductor & Hardware',
+                'cloud-enterprise': '☁️ Cloud & Enterprise Software',
+                'crypto-mining': '₿ Crypto & Mining',
+                'energy': '⚡ Energy & Nuclear',
+                'big-tech': '🏢 Big Tech',
+                'other-tech': '🔧 Other Technology'
+            };
+            return titles[categoryKey] || categoryKey;
+        }
+
+        function createAnalysisCard(stock) {
+            const { pnl, pnlPercent, currentValue } = calculatePnL(stock);
+            const performanceClass = pnl > 0 ? 'profit' : pnl < 0 ? 'loss' : 'neutral';
+            const pnlColor = pnl > 0 ? '#2ecc71' : pnl < 0 ? '#e74c3c' : '#95a5a6';
+            
+            const fundamental = fundamentalData[stock.ticker] || {};
+            const technical = technicalData[stock.ticker] || {};
+            const news = newsData[stock.ticker] || {};
+            
+            const profile = fundamental.profile || {};
+            const metrics = fundamental.metrics || {};
+            const recommendation = technical.recommendation || {};
+            
+            // Calculate RSI signal
+            let rsiValue = '--';
+            let rsiSignal = 'Loading...';
+            let rsiColor = '#95a5a6';
+            
+            if (technical.rsi && technical.rsi.rsi && technical.rsi.rsi.length > 0) {
+                const latestRSI = technical.rsi.rsi[technical.rsi.rsi.length - 1];
+                rsiValue = formatNumber(latestRSI);
+                rsiSignal = getRSISignal(latestRSI);
+                rsiColor = getRSIColor(latestRSI);
+            }
+
+            // Calculate analyst consensus
+            let analystConsensus = 'N/A';
+            let consensusClass = 'rec-hold';
+            
+            if (recommendation.strongBuy || recommendation.buy || recommendation.hold || recommendation.sell) {
+                const total = (recommendation.strongBuy || 0) + (recommendation.buy || 0) + (recommendation.hold || 0) + (recommendation.sell || 0) + (recommendation.strongSell || 0);
+                const buyRatio = ((recommendation.strongBuy || 0) + (recommendation.buy || 0)) / total;
+                
+                if (buyRatio >= 0.7) {
+                    analystConsensus = 'STRONG BUY';
+                    consensusClass = 'rec-strong-buy';
+                } else if (buyRatio >= 0.5) {
+                    analystConsensus = 'BUY';
+                    consensusClass = 'rec-buy';
+                } else if (buyRatio <= 0.3) {
+                    analystConsensus = 'SELL';
+                    consensusClass = 'rec-sell';
+                } else {
+                    analystConsensus = 'HOLD';
+                    consensusClass = 'rec-hold';
+                }
+            }
+
+            return `
+                <div class="stock-card">
+                    <div class="stock-header">
+                        <div>
+                            <div class="stock-symbol">${stock.ticker}</div>
+                            <div class="stock-name">${stock.name}</div>
+                        </div>
+                        <div class="performance-indicator ${performanceClass}"></div>
+                    </div>
+                    
+                    <!-- Price Metrics -->
+                    <div class="stock-metrics">
+                        <div class="metric">
+                            <div class="metric-label">Current Price</div>
+                            <div class="metric-value">${formatCurrency(stock.live)}</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Portfolio P&L</div>
+                            <div class="metric-value" style="color: ${pnlColor}">${pnlPercent >= 0 ? '+' : ''}${pnlPercent.toFixed(1)}%</div>
+                        </div>
+                    </div>
+
+                    <!-- Fundamental Analysis -->
+                    <div class="analysis-grid" style="margin: 15px 0;">
+                        <div class="analysis-card">
+                            <div class="analysis-title">Market Cap</div>
+                            <div class="analysis-value">${formatLargeNumber(profile.marketCapitalization)}</div>
+                        </div>
+                        <div class="analysis-card">
+                            <div class="analysis-title">P/E Ratio</div>
+                            <div class="analysis-value">${formatNumber(metrics.peBasicExclExtraTTM)}</div>
+                        </div>
+                        <div class="analysis-card">
+                            <div class="analysis-title">EPS TTM</div>
+                            <div class="analysis-value">${formatCurrency(metrics.epsBasicExclExtraordItemsTTM)}</div>
+                        </div>
+                        <div class="analysis-card">
+                            <div class="analysis-title">Revenue TTM</div>
+                            <div class="analysis-value">${formatLargeNumber(metrics.revenueTTM)}</div>
+                        </div>
+                    </div>
+
+                    <!-- Technical Analysis -->
+                    <div class="technical-indicators">
+                        <div class="technical-card">
+                            <div class="technical-label">RSI (14)</div>
+                            <div class="technical-value" style="color: ${rsiColor}">${rsiValue}</div>
+                            <div class="analysis-subtitle">${rsiSignal}</div>
+                        </div>
+                        <div class="technical-card">
+                            <div class="technical-label">Analyst Rating</div>
+                            <div class="technical-value">
+                                <span class="recommendation-badge ${consensusClass}" style="font-size: 0.7em; padding: 3px 8px;">
+                                    ${analystConsensus}
+                                </span>
+                            </div>
+                            <div class="analysis-subtitle">${(recommendation.strongBuy || 0) + (recommendation.buy || 0) + (recommendation.hold || 0) + (recommendation.sell || 0) + (recommendation.strongSell || 0)} analysts</div>
+                        </div>
+                        <div class="technical-card">
+                            <div class="technical-label">52W Range</div>
+                            <div class="technical-value" style="font-size: 0.75em;">
+                                ${formatCurrency(metrics['52WeekLow'])} - ${formatCurrency(metrics['52WeekHigh'])}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- News Preview -->
+                    ${createNewsPreview(ticker)}
+                </div>
+            `;
+        }
+
+        function createNewsPreview(ticker) {
+            const stockNews = newsData[ticker] || {};
+            const news = stockNews.news || [];
+            
+            if (news.length === 0) {
+                return `
+                    <div style="text-align: center; padding: 10px; font-size: 0.8em; color: #95a5a6;">
+                        Click to load latest news...
+                    </div>
+                `;
+            }
+            
+            const latestNews = news[0];
+            return `
+                <div style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 6px;">
+                    <div style="font-size: 0.8em; font-weight: bold; color: #2c3e50; margin-bottom: 5px;">
+                        📰 Latest: ${latestNews.headline.substring(0, 80)}${latestNews.headline.length > 80 ? '...' : ''}
+                    </div>
+                    <div style="font-size: 0.7em; color: #6c757d;">
+                        ${latestNews.source} • ${new Date(latestNews.datetime * 1000).toLocaleDateString()}
+                        <span class="sentiment-indicator ${getSentimentClass(latestNews.sentiment)}"></span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Data Fetching Functions
+        async function fetchRealPrices() {
+            try {
+                console.log('🔄 Fetching real prices...');
+                updateDataSourceStatus('FETCHING...');
+                
+                // Get all unique tickers from both portfolio and watchlist
+                const allPortfolioStocks = Object.values(portfolioData).flat();
+                const allWatchlistStocks = Object.values(watchlistData).flat();
+                
+                // Fetch portfolio prices
+                const portfolioPromises = allPortfolioStocks.map(async (stock) => {
+                    try {
+                        const response = await fetch(`https://finnhub.io/api/v1/quote?symbol=${stock.ticker}&token=${API_KEY}`);
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data.c && data.c > 0) {
+                                stock.live = data.c;
+                                console.log(`📈 Updated ${stock.ticker}: ${formatCurrency(data.c)}`);
+                            }
+                        }
+                    } catch (error) {
+                        console.log(`❌ Could not fetch ${stock.ticker}:`, error.message);
+                    }
+                });
+
+                // Fetch watchlist prices
+                const watchlistPromises = allWatchlistStocks.map(async (stock) => {
+                    try {
+                        const response = await fetch(`https://finnhub.io/api/v1/quote?symbol=${stock.ticker}&token=${API_KEY}`);
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data.c && data.c > 0) {
+                                stock.live = data.c;
+                                console.log(`📈 Updated watchlist ${stock.ticker}: ${formatCurrency(data.c)}`);
+                            }
+                        }
+                    } catch (error) {
+                        console.log(`❌ Could not fetch watchlist ${stock.ticker}:`, error.message);
+                    }
+                });
+                
+                await Promise.all([...portfolioPromises, ...watchlistPromises]);
+                
+                updateDataSourceStatus('LIVE DATA ✅', '#2ecc71');
+                
+                // Re-render the current page
+                if (currentPage === 'portfolio') {
+                    renderPortfolio();
+                } else if (currentPage === 'watchlist') {
+                    renderWatchlist();
+                } else if (currentPage === 'analysis') {
+                    renderAnalysisPage();
+                }
+                
+                console.log('✅ Real prices updated successfully!');
+                
+            } catch (error) {
+                console.error('❌ Error fetching real prices:', error);
+                updateDataSourceStatus('FETCH FAILED ❌', '#e74c3c');
+                
+                // Fall back to simulated prices
+                simulateRealisticPrices();
+            }
+        }
+
+        function updateDataSourceStatus(text, color = '#2ecc71') {
+            const sources = ['dataSource', 'watchlistDataSource'];
+            sources.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = text;
+                    element.style.color = color;
+                }
+            });
+        }
+
+        function simulateRealisticPrices() {
+            console.log('🎲 Simulating price movements...');
+            
+            // Simulate portfolio prices
+            Object.values(portfolioData).flat().forEach(stock => {
+                const volatility = getVolatilityByTicker(stock.ticker);
+                const randomChange = (Math.random() - 0.5) * 2; // -1 to +1
+                const priceChangePercent = randomChange * volatility * 0.01;
+                
+                stock.live = stock.live * (1 + priceChangePercent);
+                if (stock.live < 0.01) stock.live = 0.01;
+                stock.live = Math.round(stock.live * 100) / 100;
+            });
+            
+            // Simulate watchlist prices
+            Object.values(watchlistData).flat().forEach(stock => {
+                const volatility = getVolatilityByTicker(stock.ticker);
+                const randomChange = (Math.random() - 0.5) * 2;
+                const priceChangePercent = randomChange * volatility * 0.01;
+                
+                stock.live = stock.live * (1 + priceChangePercent);
+                if (stock.live < 0.01) stock.live = 0.01;
+                stock.live = Math.round(stock.live * 100) / 100;
+            });
+            
+            // Re-render current page
+            if (currentPage === 'portfolio') {
+                renderPortfolio();
+            } else if (currentPage === 'watchlist') {
+                renderWatchlist();
+            } else if (currentPage === 'analysis') {
+                renderAnalysisPage();
+            }
+        }
+
+        function getVolatilityByTicker(ticker) {
+            // Find which category this ticker belongs to and return appropriate volatility
+            const volatilities = {
+                'ai-ml': 0.8,
+                'quantum': 1.2,
+                'semiconductor': 0.6,
+                'cloud-enterprise': 0.5,
+                'crypto-mining': 1.0,
+                'energy': 0.4,
+                'big-tech': 0.3,
+                'other-tech': 0.5,
+                'etf': 0.3,
+                'transport': 0.9,
+                'other': 0.5
+            };
+            
+            // Check portfolio data
+            for (const [category, stocks] of Object.entries(portfolioData)) {
+                if (stocks.some(stock => stock.ticker === ticker)) {
+                    return volatilities[category] || 0.5;
+                }
+            }
+            
+            // Check watchlist data
+            for (const [category, stocks] of Object.entries(watchlistData)) {
+                if (stocks.some(stock => stock.ticker === ticker)) {
+                    return volatilities[category] || 0.5;
+                }
+            }
+            
+            return 0.5; // Default volatility
+        }
+
+        // Refresh Functions
+        function refreshPortfolioData() {
+            console.log('🔄 Manual portfolio refresh triggered');
+            fetchRealPrices();
+        }
+
+        function refreshWatchlistData() {
+            console.log('🔄 Manual watchlist refresh triggered');
+            fetchRealPrices();
+        }
+
+        function refreshAnalysisData() {
+            console.log('🔄 Manual analysis refresh triggered');
+            fetchRealPrices();
+            
+            // Also refresh analysis data for expanded stocks
+            if (expandedStock) {
+                fetchStockAnalysis(expandedStock);
+            }
+        }
+
+        function autoRefresh() {
+            console.log(`🔄 Auto-refreshing ${currentPage} data`);
+            if (usingRealData) {
+                fetchRealPrices();
+            } else {
+                simulateRealisticPrices();
+            }
+        }
+
+        // Countdown Timer
+        function startCountdown() {
+            const countdownElement = document.getElementById('countdown');
+            
+            setInterval(() => {
+                countdown--;
+                if (countdownElement) {
+                    countdownElement.textContent = countdown;
+                }
+                
+                if (countdown <= 0) {
+                    autoRefresh();
+                    countdown = 30;
+                }
+            }, 1000);
+        }
+
+        // Make functions globally available
+        window.switchPage = switchPage;
+        window.toggleAnalysisView = toggleAnalysisView;
+        window.toggleStockExpansion = toggleStockExpansion;
+        window.fetchAllAnalysis = fetchAllAnalysis;
+        window.refreshPortfolioData = refreshPortfolioData;
+        window.refreshWatchlistData = refreshWatchlistData;
+        window.refreshAnalysisData = refreshAnalysisData;
+
+        // Initialize Application
+        function initializeDashboard() {
+            console.log('🚀 Initializing Advanced Portfolio Dashboard...');
+            
+            // Initial render
+            renderPortfolio();
+            
+            // Start countdown timer
+            startCountdown();
+            
+            // Fetch real prices after a brief delay
+            setTimeout(() => {
+                fetchRealPrices();
+            }, 1000);
+            
+            // Set up auto-refresh
+            setInterval(autoRefresh, 30000);
+            
+            console.log('✅ Dashboard initialized successfully!');
+        }
+
+        // Start the application when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeDashboard);
+        } else {
+            initializeDashboard();
+        }
+    </script>
+</body>
+</html>
